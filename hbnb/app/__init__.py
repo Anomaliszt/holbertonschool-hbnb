@@ -1,3 +1,5 @@
+# app/__init__.py
+
 from flask import Flask
 from flask_restx import Api
 from app.api.v1.users import api as users_ns
