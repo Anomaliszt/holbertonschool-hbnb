@@ -1,11 +1,10 @@
 from flask_restx import fields, Namespace
-from models.place import Place
-from models.review import Review
-from models.user import User
+from app.api.v1.users import user_model
+from app.api.v1.amenities import amenity_model
+
 
 api = Namespace('places', description='Place operations')
 
-# Assuming user_model and amenity_model are defined elsewhere
 
 review_model = api.model('PlaceReview', {
     'id': fields.String(description='Review ID'),
