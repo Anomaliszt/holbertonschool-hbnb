@@ -57,6 +57,6 @@ class AmenityResource(Resource):
         # Placeholder for the logic to update an amenity by ID
         try:
             updated_amenity = facade.update_amenity(amenity_id, api.payload)
-            return {'id': updated_amenity.id, 'name': updated_amenity.name}, 200
+            return {'message': 'Amenity updated successfully'}, 200
         except ValueError as e:
             return {'message': str(e)}, 400 if 'Invalid' in str(e) else 404
