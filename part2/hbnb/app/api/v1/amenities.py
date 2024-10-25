@@ -4,7 +4,6 @@ from app.services.facade import HBnBFacade
 
 api = Namespace('amenities', description='Amenity operations')
 
-# Define the amenity model for input validation and documentation
 amenity_model = api.model('Amenity', {
     'name': fields.String(required=True, description='Name of the amenity')
 })
@@ -54,7 +53,6 @@ class AmenityResource(Resource):
     @api.response(400, 'Invalid input data')
     def put(self, amenity_id):
         """Update an amenity's information"""
-        # Placeholder for the logic to update an amenity by ID
         try:
             updated_amenity = facade.update_amenity(amenity_id, api.payload)
             return {'message': 'Amenity updated successfully'}, 200
