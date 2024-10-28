@@ -21,26 +21,19 @@ The goal is to bring the documented architecture to life by creating the project
 - `run.py` is the entry point for running the Flask application.
 - `config.py` will be used for configuring environment variables and application settings.
 - `requirements.txt` will list all the Python packages needed for the project.
-- `README.md` will contain a brief overview of the project.
+
 
 ## **COMPILATION**
 ```
 python3 run.py
 ```
 
+<img title="Web HBNB" alt="Hbnb" src="hbnb.PNG">
+
+
 ## Install requirements
 ```
 pip install -r requirements.txt
-```
-
-## Install Flask-restx
-```
-pip install flask-restx
-```
-
-## Install Flask
-```
-pip install flask
 ```
 
 ## **AUTHORS**
@@ -51,5 +44,5 @@ pip install flask
 #### [Binbin HE](https://github.com/yanis59100):
 <8755@holbertonstudents.com>
 
-#### [Xiavier Sanchez](https://github.com/binbinher):
+#### [Xavier Sanchez](https://github.com/binbinher):
 <9552@holbertonstudents.com>
