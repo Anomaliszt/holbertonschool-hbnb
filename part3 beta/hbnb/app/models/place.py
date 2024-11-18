@@ -1,15 +1,33 @@
 from app.models.BaseModel import BaseModel
-from app import bcrypt, db
+from app import db
 
 class Place(BaseModel):
     __tablename__ = 'places'
 
-    title = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    price = db.Column(db.Float, nullable=False)
-    latitude = db.Column(db.Float, nullable=False)
-    longitude = db.Column(db.Float, nullable=False)
-    owner_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+    _title = db.Column(db.String(255), nullable=False)
+    _description = db.Column(db.Text, nullable=True)
+    _price = db.Column(db.Numeric(10, 2), nullable=False)
+    _latitude = db.Column(db.Float, nullable=False)
+    _longitude = db.Column(db.Float, nullable=False)
+    _owner_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+
+
+    @classmethod
+    def create(cls, title, description, price, latitude, longitude, owner_id):
+        title = cls.validate_title(title)
+        price = cls.validate_price(price)
+        latitude = cls.validate_latitude(latitude)
+        longitude = cls.validate_longitude(longitude)
+        instance = cls()
+        instance._title = title
+        instance._description = description
+        instance._price = price
+        instance._latitude = latitude
+        instance._longitude = longitude
+        instance._owner_id = owner_id
+        instance.reviews = []
+        instance.amenities = []
+        return instance
 
     @staticmethod
     def validate_title(title):
