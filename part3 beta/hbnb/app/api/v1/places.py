@@ -2,6 +2,7 @@ from flask_restx import Namespace, Resource, fields
 from app.services.facade import HBnBFacade
 from app.api.v1.users import user_model
 from app.api.v1.amenities import amenity_model
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 api = Namespace('places', description='Place operations')
 
@@ -35,9 +36,12 @@ class PlaceList(Resource):
     @api.expect(place_model)
     @api.response(201, 'Place successfully created')
     @api.response(400, 'Invalid input data')
+    @jwt_required
     def post(self):
         """Register a new place"""
         place_data = api.payload
+        current_user_id = get_jwt_identity()
+        place_data['owner_id'] = current_user_id
         try:
             place = facade.create_place(place_data)
             return {

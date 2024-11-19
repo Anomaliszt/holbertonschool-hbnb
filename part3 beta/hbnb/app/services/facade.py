@@ -4,6 +4,7 @@ from app.models.amenity import Amenity
 from app.models.review import Review
 from app.persistence.repository import SQLAlchemyRepository
 from app.persistence.repository import UserRepository
+from app import bcrypt
 
 
 class HBnBFacade:
@@ -25,7 +26,7 @@ class HBnBFacade:
     
     def get_user_by_email(self, email):
         """ Retrieve a user by its email."""
-        return self.user_repo.get_by_attribute('email', email)
+        return self.user_repo.get_by_email(email)
     
     def get_all_users(self):
         """ Retrieve all users."""
@@ -130,3 +131,7 @@ class HBnBFacade:
         if not review:
             raise ValueError('Review not found')
         self.review_repo.delete(review_id)
+
+    def hash_password(self, password):
+        """Hashes the password before storing it."""
+        return bcrypt.generate_password_hash(password).decode('utf-8')
