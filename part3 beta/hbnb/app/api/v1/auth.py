@@ -1,6 +1,6 @@
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import create_access_token
-from app.services import facade
+from app.services.facade import HBnBFacade
 
 api = Namespace('auth', description='Authentication operations')
 
@@ -8,6 +8,8 @@ login_model = api.model('Login', {
     'email': fields.String(required=True, description='User email'),
     'password': fields.String(required=True, description='User password')
 })
+
+facade = HBnBFacade()
 
 @api.route('/login')
 class Login(Resource):
