@@ -1,4 +1,5 @@
 from flask_restx import Namespace, Resource, fields
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services import facade
 from app.services.facade import HBnBFacade
 
@@ -12,11 +13,17 @@ facade = HBnBFacade()
 
 @api.route('/')
 class AmenityList(Resource):
+    @jwt_required()
     @api.expect(amenity_model)
     @api.response(201, 'Amenity successfully created')
     @api.response(400, 'Invalid input data')
+    @api.response(403, 'Unauthorized - Admin access required')
     def post(self):
-        """Register a new amenity"""
+        """Create a new amenity (Admin only)"""
+        current_user = get_jwt_identity()
+        if not current_user.get('is_admin'):
+            return {'message': 'Admin access required'}, 403
+
         data = api.payload
         try:
             amenity = facade.create_amenity(data)
@@ -47,12 +54,18 @@ class AmenityResource(Resource):
         except ValueError as e:
             return {'message': str(e)}, 404
 
+    @jwt_required()
     @api.expect(amenity_model)
     @api.response(200, 'Amenity updated successfully')
     @api.response(404, 'Amenity not found')
     @api.response(400, 'Invalid input data')
+    @api.response(403, 'Unauthorized - Admin access required')
     def put(self, amenity_id):
-        """Update an amenity's information"""
+        """Update an amenity's information (Admin only)"""
+        current_user = get_jwt_identity()
+        if not current_user.get('is_admin'):
+            return {'message': 'Admin access required'}, 403
+
         try:
             updated_amenity = facade.update_amenity(amenity_id, api.payload)
             return {'message': 'Amenity updated successfully'}, 200

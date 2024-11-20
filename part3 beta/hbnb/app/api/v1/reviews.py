@@ -17,12 +17,23 @@ facade = HBnBFacade()
 class ReviewList(Resource):
     @api.expect(review_model)
     @api.response(201, 'Review successfully created')
-    @api.response(400, 'Invalid input data')
+    @api.response(400, 'Invalid input data or validation error')
+    @api.response(404, 'Place not found')
     @jwt_required()
     def post(self):
         """Register a new review"""
         review_data = api.payload
         user_id = get_jwt_identity()
+
+        place = facade.get_place(review_data['place_id'])
+        if not place:
+            return {'message': 'Place not found'}, 404
+        if place.owner_id == user_id:
+            return {'message': 'You cannot review your own place'}, 400
+
+        existing_review = facade.get_review_by_user_and_place(user_id, review_data['place_id'])
+        if existing_review:
+            return {'message': 'You have already reviewed this place'}, 400
 
         review_data['user_id'] = user_id
         new_review = facade.create_review(review_data)
@@ -61,6 +72,7 @@ class ReviewResource(Resource):
 
     @api.expect(review_model)
     @api.response(200, 'Review updated successfully')
+    @api.response(403, 'Unauthorized action')
     @api.response(404, 'Review not found')
     @api.response(400, 'Invalid input data')
     @jwt_required()
@@ -68,32 +80,52 @@ class ReviewResource(Resource):
         """Update a review's information"""
         user_id = get_jwt_identity()
         data = api.payload
+
+        if not data or 'text' not in data or 'rating' not in data:
+            return {'message': 'Missing required fields'}, 400
+
+        if not isinstance(data['rating'], int) or not (1 <= data['rating'] <= 5):
+            return {'message': 'Rating must be an integer between 1 and 5'}, 400
+
+        review = facade.get_review(review_id)
+        if not review:
+            return {'message': 'Review not found'}, 404
+            
+        if review.user_id != user_id:
+            return {'message': 'Unauthorized action'}, 403
+
         try:
-            review = facade.get_review(review_id)
-            if review.user_id != user_id:
-                return {'message': 'Unauthorized to update this review'}, 403
             updated_review = facade.update_review(review_id, data)
-            return {'message': 'Review updated successfully'}, 200
+            return {
+                'id': updated_review.id,
+                'text': updated_review.text,
+                'rating': updated_review.rating,
+                'user_id': updated_review.user_id,
+                'place_id': updated_review.place_id
+            }, 200
         except ValueError as e:
-            return {'message': str(e)}, 404
+            return {'message': str(e)}, 400
 
     @api.response(200, 'Review deleted successfully')
     @api.response(404, 'Review not found')
-    @api.response(403, 'Unauthorized to delete this review')
+    @api.response(403, 'Unauthorized action')
     @jwt_required()
     def delete(self, review_id):
         """Delete a review"""
         user_id = get_jwt_identity()
+        
+        review = facade.get_review(review_id)
+        if not review:
+            return {'message': 'Review not found'}, 404
+            
+        if review.user_id != user_id:
+            return {'message': 'Unauthorized action'}, 403
+            
         try:
-            review = facade.get_review(review_id)
-            if not review:
-                return {'message': 'Review not found'}, 404
-            if review.user_id != user_id:
-                return {'message': 'Unauthorized to delete this review'}, 403
             facade.delete_review(review_id)
             return {'message': 'Review deleted successfully'}, 200
-        except ValueError:
-            return {'message': 'Review not found'}, 404
+        except Exception as e:
+            return {'message': 'Error deleting review'}, 500
 
 @api.route('/places/<place_id>/reviews')
 class PlaceReviewList(Resource):
@@ -105,4 +137,3 @@ class PlaceReviewList(Resource):
         if not reviews:
             return {"message": "Place not found"}, 404
         return [{'id': review.id, 'text': review.text, 'rating': review.rating} for review in reviews], 200
-        

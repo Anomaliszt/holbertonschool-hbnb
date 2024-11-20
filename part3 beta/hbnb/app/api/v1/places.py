@@ -36,12 +36,21 @@ class PlaceList(Resource):
     @api.expect(place_model)
     @api.response(201, 'Place successfully created')
     @api.response(400, 'Invalid input data')
+    @api.response(403, 'Unauthorized action')
     @jwt_required
     def post(self):
         """Register a new place"""
         place_data = api.payload
-        current_user_id = get_jwt_identity()
-        place_data['owner_id'] = current_user_id
+        current_user = get_jwt_identity()
+        is_admin = current_user.get('is_admin', False)
+        user_id = current_user.get('id')
+
+        if not is_admin and place_data.get('owner_id') != user_id:
+            return {'error': 'Unauthorized action'}, 403
+            
+        if not is_admin:
+            place_data['owner_id'] = user_id
+            
         try:
             place = facade.create_place(place_data)
             return {
@@ -90,17 +99,30 @@ class PlaceResource(Resource):
     @api.response(200, 'Place updated successfully')
     @api.response(404, 'Place not found')
     @api.response(400, 'Invalid input data')
+    @api.response(403, 'Unauthorized action')
     @jwt_required
     def put(self, place_id):
-        """Update a place's information"""
-        place_data = api.payload
-        current_user_id = get_jwt_identity()
+        """
+        Update a place's information
+        Only the owner of the place can modify its details.
+        Requires valid JWT token in Authorization header.
+        """
+        place = facade.get_place(place_id)
+        if not place:
+            return {'error': 'Place not found'}, 404
+            
+        current_user = get_jwt_identity()
+        is_admin = current_user.get('is_admin', False)
+        user_id = current_user.get('id')
+        
+        if not is_admin and place.owner_id != user_id:
+            return {'error': 'Unauthorized action'}, 403
+            
         try:
-            place = facade.get_place(place_id)
-            if not place:
-                return {'error': 'Place not found'}, 404
-            if place.owner_id != current_user_id:
-                return {'error': 'Unauthorized access'}, 403
+            place_data = api.payload
+            if not is_admin:
+                place_data.pop('owner_id', None)
+            
             place_update = facade.update_place(place_id, place_data)
             return {
                 'id': place_update.id,
