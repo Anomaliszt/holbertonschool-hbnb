@@ -1,18 +1,13 @@
-from app.models.BaseModel import BaseModel
 from app import db
+from uuid import uuid4
 
-class Amenity(BaseModel):
+class Amenity(db.Model):
     __tablename__ = 'amenities'
 
-    _name = db.Column(db.String(128), nullable=False)
+    id = db.Column(db.String(60), primary_key=True, default=lambda: str(uuid4()))
+    name = db.Column(db.String(128), nullable=False)
 
-    @classmethod
-    def create(cls, name):
-        validated_name = cls.validate_name(name)
-        return cls(name=validated_name)
-
-    @staticmethod
-    def validate_name(name):
-        if not name or len(name) > 50:
-            raise ValueError("Amenity name must be provided and cannot exceed 50 characters.")
-        return name
+    def __init__(self, **kwargs):
+        super(Amenity, self).__init__(**kwargs)
+        if 'id' not in kwargs:
+            self.id = str(uuid4())
