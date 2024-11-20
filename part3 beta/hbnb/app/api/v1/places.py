@@ -3,6 +3,7 @@ from app.services.facade import HBnBFacade
 from app.api.v1.users import user_model
 from app.api.v1.amenities import amenity_model
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask import jsonify
 
 api = Namespace('places', description='Place operations')
 
@@ -26,42 +27,45 @@ place_model = api.model('Place', {
     'longitude': fields.Float(required=True, description='Longitude of the place'),
     'owner_id': fields.String(required=True, description='ID of the owner'),
     'owner': fields.Nested(user_model, description='Owner details'),
-    'amenities': fields.List(fields.String, required=True, description="List of amenities ID's")
+    'amenities': fields.List(fields.String, required=False, description="List of amenities ID's")
 })
 
 facade = HBnBFacade()
 
 @api.route('/')
 class PlaceList(Resource):
-    @api.expect(place_model)
+    @api.expect(place_model, validate=True)
     @api.response(201, 'Place successfully created')
     @api.response(400, 'Invalid input data')
     @api.response(403, 'Unauthorized action')
-    @jwt_required
+    @jwt_required()
     def post(self):
         """Register a new place"""
-        place_data = api.payload
         current_user = get_jwt_identity()
-        is_admin = current_user.get('is_admin', False)
-        user_id = current_user.get('id')
+        place_data = api.payload
+        user = facade.get_user(place_data.get('owner_id'))
+        if user is None:
+            return {'error': 'Invalid owner_id.'}, 400
 
-        if not is_admin and place_data.get('owner_id') != user_id:
-            return {'error': 'Unauthorized action'}, 403
-            
-        if not is_admin:
-            place_data['owner_id'] = user_id
-            
+        if current_user['id'] != user.id:
+            return {'error': 'Unauthorized action.'}, 403
+
+        if place_data.get('amenities'):
+            for amenity in place_data.get('amenities'):
+                if facade.get_amenity(amenity['id']) is None:
+                    return {'error': 'Invalid amenity ID.'}, 400
+
         try:
             place = facade.create_place(place_data)
             return {
                 'id': place.id,
                 'title': place.title,
                 'description': place.description,
-                'price': place.price,
+                'price': str(place.price),
                 'latitude': place.latitude,
                 'longitude': place.longitude,
-                'owner_id': place.owner_id
-            }, 201
+                'owner_id': place.owner_id,
+                }, 201
         except ValueError as e:
             return {'error': str(e)}, 400
 

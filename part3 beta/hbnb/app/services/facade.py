@@ -98,7 +98,13 @@ class HBnBFacade:
 
     def create_review(self, review_data):
         """ Create a new review with the given data."""
-        new_review = Review(**review_data)
+        validated_data = {
+            'text': str(review_data.get('text')),
+            'rating': int(review_data.get('rating')),
+            'place_id': str(review_data.get('place_id')),
+            'user_id': str(review_data.get('user_id'))
+        }
+        new_review = Review(**validated_data)
         self.review_repo.add(new_review)
         return new_review
 
@@ -131,6 +137,14 @@ class HBnBFacade:
         if not review:
             raise ValueError('Review not found')
         self.review_repo.delete(review_id)
+
+    def get_review_by_user_and_place(self, user_id, place_id):
+        """Check if a user has already reviewed a specific place."""
+        all_reviews = self.review_repo.get_all()
+        for review in all_reviews:
+            if review.user_id == user_id and review.place_id == place_id:
+                return review
+        return None
 
     def hash_password(self, password):
         """Hashes the password before storing it."""

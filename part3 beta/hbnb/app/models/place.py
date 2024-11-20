@@ -1,5 +1,7 @@
-from app.models.BaseModel import BaseModel
+from sqlalchemy.ext.hybrid import hybrid_property
+
 from app import db
+from app.models.BaseModel import BaseModel
 
 class Place(BaseModel):
     __tablename__ = 'places'
@@ -10,53 +12,80 @@ class Place(BaseModel):
     _latitude = db.Column(db.Float, nullable=False)
     _longitude = db.Column(db.Float, nullable=False)
     _owner_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+    
+    @hybrid_property
+    def title(self):
+        return self._title
 
+    @title.setter
+    def title(self, value):
+        if not isinstance(value, str) or len(value) > 255:
+            raise ValueError(
+                'Title must a maximum length of 255 characters.'
+            )
+        self._title = value
 
-    @classmethod
-    def create(cls, title, description, price, latitude, longitude, owner_id):
-        title = cls.validate_title(title)
-        price = cls.validate_price(price)
-        latitude = cls.validate_latitude(latitude)
-        longitude = cls.validate_longitude(longitude)
-        instance = cls()
-        instance._title = title
-        instance._description = description
-        instance._price = price
-        instance._latitude = latitude
-        instance._longitude = longitude
-        instance._owner_id = owner_id
-        instance.reviews = []
-        instance.amenities = []
-        return instance
+    @hybrid_property
+    def description(self):
+        return self._description
 
-    @staticmethod
-    def validate_title(title):
-        if not title or len(title) > 100:
-            raise ValueError("Title must be provided and cannot exceed 100 characters.")
-        return title
+    @description.setter
+    def description(self, value):
+        if value and not isinstance(value, str) or len(value) > 2048:
+            raise ValueError(
+                'Description must be a string with a\
+                 maximum length of 2048 characters.'
+            )
+        self._description = value
 
-    @staticmethod
-    def validate_price(price):
-        if price <= 0:
-            raise ValueError("Price must be a positive value.")
-        return price
+    @hybrid_property
+    def price(self):
+        return self._price
 
-    @staticmethod
-    def validate_latitude(latitude):
-        if not (-90.0 <= latitude <= 90.0):
-            raise ValueError("Latitude must be between -90.0 and 90.0.")
-        return latitude
+    @price.setter
+    def price(self, value):
+        if not isinstance(value, (int, float)) or value <= 0:
+            raise ValueError(
+                'Price must be a positive number.'
+            )
+        self._price = value
 
-    @staticmethod
-    def validate_longitude(longitude):
-        if not (-180.0 <= longitude <= 180.0):
-            raise ValueError("Longitude must be between -180.0 and 180.0.")
-        return longitude
+    @hybrid_property
+    def latitude(self):
+        return self._latitude
 
-    def add_review(self, review):
-        """Add a review to the place."""
-        self.reviews.append(review)
+    @latitude.setter
+    def latitude(self, value):
+        if not isinstance(value, (int, float)) or not (-90.0 <= value <= 90.0):
+            raise ValueError(
+                'Latitude must be a number between -90.0 and 90.0.'
+            )
+        self._latitude = value
 
-    def add_amenity(self, amenity):
-        """Add an amenity to the place."""
-        self.amenities.append(amenity)
+    @hybrid_property
+    def longitude(self):
+        return self._longitude
+
+    @longitude.setter
+    def longitude(self, value):
+        if not isinstance(value, (int, float)):
+            raise ValueError(
+                'Longitude must be a number between -180.0 and 180.0.'
+            )
+        elif not (-180.0 <= value <= 180.0):
+            raise ValueError(
+                'Longitude must be a number between -180.0 and 180.0.'
+            )
+        self._longitude = value
+
+    @hybrid_property
+    def owner_id(self):
+        return self._owner_id
+
+    @owner_id.setter
+    def owner_id(self, value):
+        if not isinstance(value, str) or len(value) != 36:
+            raise ValueError(
+                'Owner ID must be a string of 36 characters.'
+            )
+        self._owner_id = value

@@ -22,30 +22,33 @@ class ReviewList(Resource):
     @jwt_required()
     def post(self):
         """Register a new review"""
-        review_data = api.payload
-        user_id = get_jwt_identity()
+        review_data = api.payload.copy()
+        user_identity = get_jwt_identity()
+        user_id = user_identity['id'] if isinstance(user_identity, dict) else user_identity
 
         place = facade.get_place(review_data['place_id'])
         if not place:
             return {'message': 'Place not found'}, 404
-        if place.owner_id == user_id:
+        if str(place.owner_id) == str(user_id):
             return {'message': 'You cannot review your own place'}, 400
 
         existing_review = facade.get_review_by_user_and_place(user_id, review_data['place_id'])
         if existing_review:
             return {'message': 'You have already reviewed this place'}, 400
 
-        review_data['user_id'] = user_id
-        new_review = facade.create_review(review_data)
-        if new_review is None:
-            return {'message': 'Invalid input data'}, 400
-        return {
+        review_data['user_id'] = str(user_id)
+        
+        try:
+            new_review = facade.create_review(review_data)
+            return {
                 "id": new_review.id,
                 "text": new_review.text,
                 "rating": new_review.rating,
                 "user_id": new_review.user_id,
                 "place_id": new_review.place_id
-                }, 201
+            }, 201
+        except (ValueError, TypeError) as e:
+            return {'message': f'Invalid input data: {str(e)}'}, 400
 
     @api.response(200, 'List of reviews retrieved successfully')
     def get(self):
@@ -78,7 +81,8 @@ class ReviewResource(Resource):
     @jwt_required()
     def put(self, review_id):
         """Update a review's information"""
-        user_id = get_jwt_identity()
+        user_identity = get_jwt_identity()
+        user_id = user_identity['id'] if isinstance(user_identity, dict) else user_identity
         data = api.payload
 
         if not data or 'text' not in data or 'rating' not in data:
@@ -112,7 +116,8 @@ class ReviewResource(Resource):
     @jwt_required()
     def delete(self, review_id):
         """Delete a review"""
-        user_id = get_jwt_identity()
+        user_identity = get_jwt_identity()
+        user_id = user_identity['id'] if isinstance(user_identity, dict) else user_identity
         
         review = facade.get_review(review_id)
         if not review:
