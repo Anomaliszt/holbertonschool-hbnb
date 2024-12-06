@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Review</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="images/icon.png">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="index.html"><img src="images/logo.png" alt="HBnB Logo" class="logo"></a>
+            <a href="login.html" id="login-link" class="login-button">Login</a>
+        </nav>
+    </header>
+    <main>
+        <section class="review-container">
+            <div class="review-box">
+                <h1 class="review-title">Write a Review</h1>
+                <div class="place-preview">
+                    <h2>Reviewing: <span id="place-name">Loading...</span></h2>
+                </div>
+                
+                <form id="review-form" class="review-form-styled">
+                    <div id="error-message" class="error-message"></div>
+                    <div id="success-message" class="success-message"></div>
+                    
+                    <div class="form-group">
+                        <label for="rating">Your Rating</label>
+                        <div class="rating-group">
+                            <div class="star-rating">
+                                <input type="radio" id="star5" name="rating" value="5" required>
+                                <label for="star5">★</label>
+                                <input type="radio" id="star4" name="rating" value="4">
+                                <label for="star4">★</label>
+                                <input type="radio" id="star3" name="rating" value="3">
+                                <label for="star3">★</label>
+                                <input type="radio" id="star2" name="rating" value="2">
+                                <label for="star2">★</label>
+                                <input type="radio" id="star1" name="rating" value="1">
+                                <label for="star1">★</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="review">Your Review</label>
+                        <textarea 
+                            id="review" 
+                            name="review" 
+                            required 
+                            placeholder="Share your experience with this place..."
+                            rows="6"
+                        ></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="javascript:history.back()" class="cancel-btn">Cancel</a>
+                        <button type="submit" class="submit-review-btn">Submit Review</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 HBnB Evolution. All rights reserved.</p>
+    </footer>
+    <script src="scripts.js"></script>
+</body>
+</html>

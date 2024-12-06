@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' http://localhost:5000; connect-src 'self' http://localhost:5000; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+    <title>List of Places</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="images/icon.png">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="index.html"><img src="images/logo.png" alt="HBnB Logo" class="logo"></a>
+            <a href="login.html" id="login-link" class="login-button">Login</a>
+        </nav>
+    </header>    
+    <main>
+        <section>
+            <h1>Available Places</h1>
+            <aside id="filter">
+                <label for="price-filter">Max Price:</label>
+                <select id="price-filter">
+                </select>
+            </aside>
+        </section>
+        <section id="places-list">
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 HBnB Evolution. All rights reserved.</p>
+    </footer>
+    <script src="scripts.js"></script>
+</body>
+</html>
